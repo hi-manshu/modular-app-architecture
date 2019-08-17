@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.play.core.splitinstall.SplitInstallManager
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallRequest
+import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
+import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -16,6 +18,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var splitInstallManager: SplitInstallManager
     lateinit var request: SplitInstallRequest
     val DYNAMIC_FEATURE = "news_feature"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -28,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         request = SplitInstallRequest
             .newBuilder()
             .addModule(DYNAMIC_FEATURE)
-            .build();
+            .build()
     }
 
     private fun setClickListeners() {
@@ -43,16 +46,17 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+
         buttonOpenNewsModule.setOnClickListener {
             val intent = Intent()
                 .setClassName(this, "com.mindorks.news_feature.newsloader.NewsLoaderActivity")
             startActivity(intent)
         }
-         buttonDeleteNewsModule.setOnClickListener {
-             val list = ArrayList<String>()
-             list.add(DYNAMIC_FEATURE)
-             uninstallDynamicFeature(list)
-         }
+        buttonDeleteNewsModule.setOnClickListener {
+            val list = ArrayList<String>()
+            list.add(DYNAMIC_FEATURE)
+            uninstallDynamicFeature(list)
+        }
     }
 
     private fun downloadFeature() {
@@ -60,7 +64,8 @@ class MainActivity : AppCompatActivity() {
             .addOnFailureListener {
                 Log.d("MainActivity", it.localizedMessage.toString())
 
-            }.addOnSuccessListener {
+            }
+            .addOnSuccessListener {
                 Log.d("MainActivity", it.toString())
                 buttonOpenNewsModule.visibility = View.VISIBLE
                 buttonDeleteNewsModule.visibility = View.VISIBLE
@@ -70,16 +75,38 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MainActivity", it.result.toString())
 
             }
+        var mySessionId = 0
+        val listener = SplitInstallStateUpdatedListener {
+            mySessionId = it.sessionId()
+            when (it.status()) {
+                SplitInstallSessionStatus.DOWNLOADING -> {
+                    val totalBytes = it.totalBytesToDownload()
+                    val progress = it.bytesDownloaded()
+                    // Update progress bar.
+                }
+                SplitInstallSessionStatus.INSTALLING -> Log.d("Status", "INSTALLING")
+                SplitInstallSessionStatus.INSTALLED -> Log.d("Status", "INSTALLED")
+                SplitInstallSessionStatus.FAILED -> Log.d("Status", "FAILED")
+                SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> startIntentSender(
+                    it.resolutionIntent().intentSender,
+                    null,
+                    0,
+                    0,
+                    0
+                )
+
+            }
+
+        }
     }
 
-    private fun isDynamicFeatureDownloaded(feature: String): Boolean {
-        return splitInstallManager.installedModules.contains(feature)
-    }
+    private fun isDynamicFeatureDownloaded(feature: String): Boolean =
+        splitInstallManager.installedModules.contains(feature)
+
 
     private fun uninstallDynamicFeature(list: List<String>) {
         splitInstallManager.deferredUninstall(list)
             .addOnSuccessListener {
-                Log.d("MainActivity", "Successfully Uninstalled")
                 buttonDeleteNewsModule.visibility = View.GONE
                 buttonOpenNewsModule.visibility = View.GONE
             }
