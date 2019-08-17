@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonClick"
+            android:text="Click to Download News Module"
+            android:layout_centerInParent="true"/>
+    <Button android:layout_width="wrap_content"
+            android:text="Open News Module"
+            android:id="@+id/buttonOpenNewsModule"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_below="@+id/buttonClick"
+            android:layout_centerInParent="true"/>
+    <Button android:layout_width="wrap_content"
+            android:text="Delete News Module"
+            android:id="@+id/buttonDeleteNewsModule"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_below="@+id/buttonOpenNewsModule"
+            android:layout_centerInParent="true"/>
+
+
+</RelativeLayout>
